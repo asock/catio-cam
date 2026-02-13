@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Add Your Catio Stream - Catio.cam{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <h1>Add Your Catio Stream</h1>
+        <p>Share your catio with the community!</p>
+        
+        <form method="post" action="/add">
+            <div class="form-group">
+                <label for="title">Stream Title</label>
+                <input type="text" id="title" name="title" required 
+                       placeholder="My Awesome Catio">
+            </div>
+            
+            <div class="form-group">
+                <label for="platform">Platform</label>
+                <select id="platform" name="platform" required>
+                    <option value="twitch">Twitch</option>
+                    <option value="youtube">YouTube</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="channel_url">Channel URL</label>
+                <input type="url" id="channel_url" name="channel_url" required
+                       placeholder="https://www.twitch.tv/your-channel">
+                <small>Full URL to your Twitch channel or YouTube live stream</small>
+            </div>
+            
+            <button type="submit" class="btn-primary">Add Stream</button>
+            <a href="/" class="btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

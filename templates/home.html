@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    {% if featured_stream %}
+    <section class="featured-section">
+        <h1>Featured Catio Stream</h1>
+        <div class="featured-stream">
+            <div class="stream-player">
+                {% if featured_stream.platform == "twitch" %}
+                <iframe
+                    src="https://player.twitch.tv/?channel={{ featured_stream.channel_url.split('/')[-1] }}&parent=localhost&parent=127.0.0.1"
+                    height="480"
+                    width="100%"
+                    allowfullscreen>
+                </iframe>
+                {% elif featured_stream.platform == "youtube" %}
+                <iframe
+                    width="100%"
+                    height="480"
+                    src="https://www.youtube.com/embed/{{ featured_stream.channel_url.split('/')[-1] }}"
+                    frameborder="0"
+                    allowfullscreen>
+                </iframe>
+                {% endif %}
+            </div>
+            <div class="stream-info">
+                <h2>{{ featured_stream.title }}</h2>
+                <p class="platform-badge">{{ featured_stream.platform }}</p>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+    
+    {% if community_streams %}
+    <section class="community-section">
+        <h2>Community Catio Streams</h2>
+        <div class="stream-grid">
+            {% for stream in community_streams %}
+            <div class="stream-card">
+                <div class="stream-thumbnail">
+                    {% if stream.platform == "twitch" %}
+                    <iframe
+                        src="https://player.twitch.tv/?channel={{ stream.channel_url.split('/')[-1] }}&parent=localhost&parent=127.0.0.1"
+                        height="200"
+                        width="100%">
+                    </iframe>
+                    {% elif stream.platform == "youtube" %}
+                    <iframe
+                        width="100%"
+                        height="200"
+                        src="https://www.youtube.com/embed/{{ stream.channel_url.split('/')[-1] }}"
+                        frameborder="0">
+                    </iframe>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <h3>{{ stream.title }}</h3>
+                    <span class="platform-badge">{{ stream.platform }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% else %}
+    <section class="empty-state">
+        <p>No community streams yet. Be the first to add yours!</p>
+        <a href="/add" class="btn-primary">Add Your Catio Stream</a>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}
