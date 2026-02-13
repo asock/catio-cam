@@ -27,6 +27,7 @@
             <div class="stream-info">
                 <h2>{{ featured_stream.title }}</h2>
                 <p class="platform-badge">{{ featured_stream.platform }}</p>
+                <p class="stream-owner">By {{ featured_stream.owner_name }}</p>
             </div>
         </div>
     </section>
@@ -57,6 +58,7 @@
                 <div class="card-body">
                     <h3>{{ stream.title }}</h3>
                     <span class="platform-badge">{{ stream.platform }}</span>
+                    <p class="stream-owner">{{ stream.owner_name }}</p>
                 </div>
             </div>
             {% endfor %}
