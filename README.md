@@ -1,137 +1,79 @@
 # Catio.cam 🐱
 
-Full-featured livestreaming hub for catio cameras with OAuth, admin panel, and real-time updates.
+Full-featured livestreaming hub for catio cameras - OAuth, admin panel, favorites, tags, search, and real-time updates!
 
 ## Features
 
-✅ **OAuth Login** - Sign in with Google or GitHub  
-✅ **Admin Panel** - Approve/reject streams, set featured stream  
-✅ **WebSocket Updates** - Real-time notifications and stats  
-✅ **SQLite Database** - Persistent storage  
-✅ **Responsive Design** - Mobile-friendly interface  
-✅ **User Dashboard** - Manage your streams  
+✅ **Auth**: Google & GitHub OAuth login
+✅ **Streams**: Add/manage Twitch/YouTube catio streams  
+✅ **Admin**: Approve/reject streams, set featured stream  
+✅ **Discovery**: Search, tag filtering, featured showcase  
+✅ **Community**: Favorites, comments, viewer counts  
+✅ **Real-time**: WebSocket live updates  
+✅ **Responsive**: Mobile-friendly design  
 
 ## Quick Start
 
-### 1. Install Dependencies
-
+1. **Install**:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Configure OAuth (Optional for Testing)
+2. **Configure OAuth** (see below)
 
-Copy `.env.example` to `.env` and add your OAuth credentials:
-
-```bash
-cp .env.example .env
-```
-
-**To get OAuth credentials:**
-
-- **Google**: https://console.cloud.google.com/apis/credentials
-  - Create OAuth 2.0 Client ID
-  - Add redirect URI: `http://localhost:8000/auth/google/callback`
-  
-- **GitHub**: https://github.com/settings/developers
-  - Create OAuth App
-  - Add callback URL: `http://localhost:8000/auth/github/callback`
-
-### 3. Run the Server
-
+3. **Run**:
 ```bash
 python main.py
 ```
 
-### 4. Open Browser
+4. Open: **http://localhost:8000**
 
-http://localhost:8000
+## OAuth Setup
 
-## Test Without OAuth
+### Google
+1. [Google Cloud Console](https://console.cloud.google.com/) → Create Project
+2. Enable Google+ API
+3. Credentials → OAuth 2.0 Client ID
+4. Redirect URI: `http://localhost:8000/auth/google/callback`
 
-The site works without OAuth configuration - you just won't be able to log in. To test:
+### GitHub  
+1. [GitHub Settings](https://github.com/settings/developers) → New OAuth App
+2. Callback URL: `http://localhost:8000/auth/github/callback`
 
-1. Visit homepage to see featured stream
-2. Check `/api/stats` for site statistics
-3. Try `/health` for health check
-
-## Admin Access
-
-The first user (`admin@catio.cam`) is automatically created with admin privileges. To make yourself admin:
-
-```sql
-sqlite3 catio.db
-UPDATE users SET is_admin = 1 WHERE email = 'your-email@gmail.com';
+### Configure
+Copy `.env.example` to `.env` and add credentials:
+```bash
+cp .env.example .env
+# Edit .env with your OAuth credentials
 ```
 
-## API Endpoints
+## Make Yourself Admin
 
-- `GET /` - Homepage with streams
-- `GET /login` - Login page
-- `GET /add` - Add stream form (requires login)
-- `GET /my-streams` - User's streams (requires login)
-- `GET /admin` - Admin panel (requires admin)
-- `GET /api/stats` - Site statistics (JSON)
-- `GET /health` - Health check
-- `WebSocket /ws` - Real-time updates
+```bash
+sqlite3 catio.db
+UPDATE users SET is_admin = 1 WHERE email = 'your@email.com';
+.quit
+```
 
 ## Tech Stack
 
-- **Backend**: FastAPI + Uvicorn
-- **Auth**: Authlib (OAuth 2.0)
-- **Database**: SQLite
-- **Templates**: Jinja2
-- **Real-time**: WebSocket
-- **Frontend**: Custom CSS
+- FastAPI + Uvicorn
+- SQLite database
+- Authlib OAuth2
+- Jinja2 templates
+- WebSockets
+- Vanilla JS + Custom CSS
 
 ## Project Structure
 
 ```
-catio-cam/
-├── main.py              # FastAPI app with all routes
-├── requirements.txt     # Python dependencies
-├── .env.example         # OAuth config template
-├── templates/          # HTML templates
-│   ├── base.html       # Base layout with WebSocket
-│   ├── home.html       # Homepage
-│   ├── login.html      # OAuth login
-│   ├── add_stream.html # Add stream form
-│   ├── my_streams.html # User dashboard
-│   └── admin.html      # Admin panel
-├── static/
-│   └── style.css       # Full styling
-└── catio.db            # SQLite database (auto-created)
+├── main.py              # Backend (OAuth, admin, WebSocket)
+├── templates/           # HTML templates
+├── static/             # CSS & JavaScript
+├── catio.db            # SQLite (auto-created)
+└── requirements.txt    # Dependencies
 ```
-
-## Deployment
-
-### Apache + mod_wsgi
-
-1. Install dependencies in virtualenv
-2. Configure OAuth with production URLs
-3. Point Apache to WSGI app
-4. Set proper file permissions for `catio.db`
-
-### Environment Variables
-
-Set these in production:
-
-```bash
-export GOOGLE_CLIENT_ID=your-production-client-id
-export GOOGLE_CLIENT_SECRET=your-production-secret
-export GITHUB_CLIENT_ID=your-github-client-id
-export GITHUB_CLIENT_SECRET=your-github-secret
-export SESSION_SECRET=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
-```
-
-## Next Steps
-
-- Deploy to production server
-- Add email notifications for stream approvals
-- Add stream analytics/viewer tracking
-- Add chat integration
-- Add stream health monitoring
 
 ## License
 
-MIT
+MIT - Made with ❤️ for cats everywhere 🐱
