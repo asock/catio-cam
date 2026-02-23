@@ -3,72 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Catio.cam{% endblock %}</title>
+    <title>{% block title %}hellsy.tube{% endblock %}</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-brand">
-                <a href="/">🐱 Catio.cam</a>
-            </div>
-            <div class="nav-menu">
-                <a href="/">Home</a>
+    <header class="header">
+        <nav class="nav">
+            <a href="/" class="nav-brand">
+                <span class="brand-icon">&#9654;</span>
+                <span class="brand-text">hellsy<span class="brand-dot">.</span>tube</span>
+            </a>
+
+            <form class="search-bar" action="/search" method="get">
+                <input type="text" name="q" placeholder="Search videos..." value="{{ request.query_params.get('q', '') }}" autocomplete="off">
+                <button type="submit" class="search-btn">Search</button>
+            </form>
+
+            <div class="nav-actions">
                 {% if user %}
-                    <a href="/my-streams">My Streams</a>
-                    <a href="/add" class="btn-primary">Add Your Catio</a>
+                    <a href="/upload" class="btn btn-upload">Upload</a>
+                    <a href="/my-videos" class="nav-link">My Videos</a>
                     {% if user.is_admin %}
-                    <a href="/admin" class="btn-admin">Admin</a>
+                        <a href="/admin" class="nav-link nav-admin">Admin</a>
                     {% endif %}
-                    <div class="user-menu">
-                        <img src="{{ user.avatar_url }}" alt="{{ user.name }}" class="user-avatar">
-                        <span>{{ user.name }}</span>
-                        <a href="/logout" class="btn-secondary">Logout</a>
+                    <div class="user-pill">
+                        {% if user.avatar_url %}
+                            <img src="{{ user.avatar_url }}" alt="" class="user-avatar">
+                        {% else %}
+                            <span class="user-avatar-placeholder">{{ user.name[0]|upper }}</span>
+                        {% endif %}
+                        <span class="user-name">{{ user.name }}</span>
+                        <a href="/logout" class="btn-logout">Logout</a>
                     </div>
                 {% else %}
-                    <a href="/login" class="btn-primary">Login</a>
+                    <a href="/login" class="btn btn-login">Sign In</a>
                 {% endif %}
             </div>
+
+            <button class="mobile-toggle" onclick="document.querySelector('.nav-actions').classList.toggle('open')">&#9776;</button>
         </nav>
     </header>
-    
-    <main>
+
+    <main class="main">
         {% block content %}{% endblock %}
     </main>
-    
-    <footer>
-        <p>&copy; 2026 Catio.cam - Watch catios live around the world</p>
-        <p class="stats-line" id="live-stats">Loading stats...</p>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <span class="footer-brand">&#9654; hellsy.tube</span>
+            <span class="footer-stats" id="footer-stats"></span>
+            <span class="footer-copy">&copy; 2026 hellsy.tube</span>
+        </div>
     </footer>
-    
-    <script>
-        // WebSocket connection for live updates
-        const ws = new WebSocket(`ws://${window.location.host}/ws`);
-        
-        ws.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-            console.log('WebSocket message:', data);
-            
-            if (data.type === 'stream_approved' || data.type === 'featured_changed') {
-                // Reload page to show updates
-                setTimeout(() => window.location.reload(), 1000);
-            }
-        };
-        
-        // Fetch and display stats
-        async function updateStats() {
-            try {
-                const response = await fetch('/api/stats');
-                const stats = await response.json();
-                document.getElementById('live-stats').textContent = 
-                    `${stats.approved_streams} streams • ${stats.users} users • ${stats.viewers} viewers • ${stats.active_connections} live`;
-            } catch (e) {
-                console.error('Failed to fetch stats', e);
-            }
-        }
-        
-        updateStats();
-        setInterval(updateStats, 30000); // Update every 30 seconds
-    </script>
+
+    <script src="/static/app.js"></script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

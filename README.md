@@ -1,79 +1,69 @@
-# Catio.cam 🐱
+# hellsy.tube ▶
 
-Full-featured livestreaming hub for catio cameras - OAuth, admin panel, favorites, tags, search, and real-time updates!
+Fast, tight HTML5 video upload & streaming platform — YouTube-lite.
 
 ## Features
 
-✅ **Auth**: Google & GitHub OAuth login
-✅ **Streams**: Add/manage Twitch/YouTube catio streams  
-✅ **Admin**: Approve/reject streams, set featured stream  
-✅ **Discovery**: Search, tag filtering, featured showcase  
-✅ **Community**: Favorites, comments, viewer counts  
-✅ **Real-time**: WebSocket live updates  
-✅ **Responsive**: Mobile-friendly design  
+- **Video Upload**: Drag-and-drop with progress bar, MP4/WebM/OGG/MOV support (500MB max)
+- **HTML5 Streaming**: Native `<video>` with HTTP Range support for instant seeking
+- **Video Feed**: Grid layout with thumbnails, view counts, duration badges
+- **Watch Page**: Full player, likes, comments, related videos sidebar
+- **Channels**: User channel pages with all their uploads
+- **Search**: Full-text search across titles, descriptions, tags
+- **Tags**: Filter videos by tags
+- **Admin Panel**: Publish/remove videos, feature videos, stats dashboard
+- **OAuth Login**: Google & GitHub authentication
+- **Real-time**: WebSocket live updates
+- **Dark Theme**: Sleek dark UI with red accent
+- **Responsive**: Mobile-first design
 
 ## Quick Start
 
-1. **Install**:
 ```bash
 pip install -r requirements.txt
-```
-
-2. **Configure OAuth** (see below)
-
-3. **Run**:
-```bash
 python main.py
 ```
 
-4. Open: **http://localhost:8000**
+Open **http://localhost:8000**
 
 ## OAuth Setup
 
 ### Google
 1. [Google Cloud Console](https://console.cloud.google.com/) → Create Project
-2. Enable Google+ API
-3. Credentials → OAuth 2.0 Client ID
-4. Redirect URI: `http://localhost:8000/auth/google/callback`
+2. Enable Google+ API → Credentials → OAuth 2.0 Client ID
+3. Redirect URI: `http://localhost:8000/auth/google/callback`
 
-### GitHub  
+### GitHub
 1. [GitHub Settings](https://github.com/settings/developers) → New OAuth App
 2. Callback URL: `http://localhost:8000/auth/github/callback`
 
 ### Configure
-Copy `.env.example` to `.env` and add credentials:
 ```bash
 cp .env.example .env
 # Edit .env with your OAuth credentials
 ```
 
-## Make Yourself Admin
-
-```bash
-sqlite3 catio.db
-UPDATE users SET is_admin = 1 WHERE email = 'your@email.com';
-.quit
-```
-
 ## Tech Stack
 
-- FastAPI + Uvicorn
-- SQLite database
-- Authlib OAuth2
-- Jinja2 templates
-- WebSockets
-- Vanilla JS + Custom CSS
+- **Backend**: FastAPI + Uvicorn + SQLite
+- **Frontend**: Vanilla JS + Custom CSS (dark theme)
+- **Auth**: Authlib OAuth2 (Google, GitHub)
+- **Templates**: Jinja2
+- **Video**: HTML5 `<video>` with Range streaming
+- **Thumbnails**: ffmpeg auto-generation (with SVG fallback)
 
 ## Project Structure
 
 ```
-├── main.py              # Backend (OAuth, admin, WebSocket)
-├── templates/           # HTML templates
-├── static/             # CSS & JavaScript
-├── catio.db            # SQLite (auto-created)
-└── requirements.txt    # Dependencies
+├── main.py              # FastAPI backend
+├── templates/           # Jinja2 HTML templates
+├── static/              # CSS & JavaScript
+├── uploads/             # Video files (auto-created)
+│   └── thumbnails/      # Video thumbnails
+├── hellsy.db            # SQLite database (auto-created)
+└── requirements.txt     # Python dependencies
 ```
 
 ## License
 
-MIT - Made with ❤️ for cats everywhere 🐱
+MIT

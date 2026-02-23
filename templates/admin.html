@@ -1,68 +1,88 @@
 {% extends "base.html" %}
-
-{% block title %}Admin Panel - Catio.cam{% endblock %}
+{% block title %}Admin — hellsy.tube{% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1>Admin Panel</h1>
-    
-    <section class="admin-section">
-        <h2>Pending Streams ({{ pending_streams|length }})</h2>
-        {% if pending_streams %}
-        <div class="admin-streams-list">
-            {% for stream in pending_streams %}
-            <div class="admin-stream-item">
-                <div class="admin-stream-content">
-                    <h3>{{ stream.title }}</h3>
-                    <p class="stream-meta">
-                        <strong>Owner:</strong> {{ stream.owner_name }} ({{ stream.owner_email }})<br>
-                        <strong>Platform:</strong> {{ stream.platform }}<br>
-                        <strong>URL:</strong> <a href="{{ stream.channel_url }}" target="_blank">{{ stream.channel_url }}</a><br>
-                        <strong>Submitted:</strong> {{ stream.created_at }}
-                    </p>
-                </div>
-                <div class="admin-stream-actions">
-                    <form method="post" action="/admin/approve/{{ stream.id }}" style="display: inline;">
-                        <button type="submit" class="btn-success">Approve</button>
-                    </form>
-                    <form method="post" action="/admin/reject/{{ stream.id }}" style="display: inline;">
-                        <button type="submit" class="btn-danger">Reject</button>
-                    </form>
-                </div>
-            </div>
-            {% endfor %}
+    <h1 class="admin-heading">Admin Dashboard</h1>
+
+    <div class="admin-stats-grid">
+        <div class="stat-card">
+            <span class="stat-value">{{ stats.total_videos }}</span>
+            <span class="stat-label">Published</span>
         </div>
-        {% else %}
-        <p class="empty-message">No pending streams</p>
-        {% endif %}
-    </section>
-    
+        <div class="stat-card">
+            <span class="stat-value">{{ stats.pending }}</span>
+            <span class="stat-label">Pending</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">{{ stats.total_users }}</span>
+            <span class="stat-label">Users</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">{{ stats.total_views|format_views }}</span>
+            <span class="stat-label">Total Views</span>
+        </div>
+    </div>
+
+    {% if pending %}
     <section class="admin-section">
-        <h2>Approved Streams ({{ approved_streams|length }})</h2>
-        {% if approved_streams %}
-        <div class="admin-streams-list">
-            {% for stream in approved_streams %}
-            <div class="admin-stream-item {% if stream.is_featured %}featured-item{% endif %}">
-                <div class="admin-stream-content">
-                    <h3>{{ stream.title }} {% if stream.is_featured %}<span class="featured-badge">★ FEATURED</span>{% endif %}</h3>
-                    <p class="stream-meta">
-                        <strong>Owner:</strong> {{ stream.owner_name }}<br>
-                        <strong>Platform:</strong> {{ stream.platform }}<br>
-                        <strong>Viewers:</strong> {{ stream.viewers }}
-                    </p>
-                </div>
-                <div class="admin-stream-actions">
-                    {% if not stream.is_featured %}
-                    <form method="post" action="/admin/feature/{{ stream.id }}" style="display: inline;">
-                        <button type="submit" class="btn-primary">Set as Featured</button>
-                    </form>
+        <h2>Pending Review ({{ pending|length }})</h2>
+        <div class="admin-list">
+            {% for v in pending %}
+            <div class="admin-item">
+                <div class="admin-item-thumb">
+                    {% if v.thumbnail %}
+                        <img src="/thumbnail/{{ v.thumbnail }}" alt="">
                     {% endif %}
                 </div>
+                <div class="admin-item-info">
+                    <h3>{{ v.title }}</h3>
+                    <p>By {{ v.uploader_name }} ({{ v.uploader_email }}) &middot; {{ v.file_size|format_size }} &middot; {{ v.created_at|time_ago }}</p>
+                </div>
+                <div class="admin-item-actions">
+                    <form method="post" action="/admin/publish/{{ v.id }}" style="display:inline">
+                        <button class="btn btn-success btn-sm">Publish</button>
+                    </form>
+                    <form method="post" action="/admin/remove/{{ v.id }}" style="display:inline">
+                        <button class="btn btn-danger btn-sm">Remove</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="admin-section">
+        <h2>Published Videos ({{ published|length }})</h2>
+        {% if published %}
+        <div class="admin-list">
+            {% for v in published %}
+            <div class="admin-item {% if v.is_featured %}admin-featured{% endif %}">
+                <div class="admin-item-thumb">
+                    {% if v.thumbnail %}
+                        <img src="/thumbnail/{{ v.thumbnail }}" alt="">
+                    {% endif %}
+                </div>
+                <div class="admin-item-info">
+                    <h3>{{ v.title }} {% if v.is_featured %}<span class="featured-badge-sm">FEATURED</span>{% endif %}</h3>
+                    <p>{{ v.uploader_name }} &middot; {{ v.views|format_views }} views &middot; {{ v.likes_count }} likes</p>
+                </div>
+                <div class="admin-item-actions">
+                    {% if not v.is_featured %}
+                    <form method="post" action="/admin/feature/{{ v.id }}" style="display:inline">
+                        <button class="btn btn-primary btn-sm">Feature</button>
+                    </form>
+                    {% endif %}
+                    <form method="post" action="/admin/remove/{{ v.id }}" style="display:inline">
+                        <button class="btn btn-danger btn-sm">Remove</button>
+                    </form>
+                </div>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <p class="empty-message">No approved streams</p>
+        <p class="empty-msg">No published videos yet.</p>
         {% endif %}
     </section>
 </div>

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ channel.name }} — hellsy.tube{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="channel-header">
+        <div class="channel-banner"></div>
+        <div class="channel-profile">
+            {% if channel.avatar_url %}
+                <img src="{{ channel.avatar_url }}" alt="" class="channel-avatar">
+            {% else %}
+                <span class="avatar-placeholder xl">{{ channel.name[0]|upper }}</span>
+            {% endif %}
+            <div class="channel-info">
+                <h1 class="channel-name">{{ channel.name }}</h1>
+                <p class="channel-handle">@{{ channel.channel_name }}</p>
+                <p class="channel-stats">{{ total_videos }} video{{ 's' if total_videos != 1 }} &middot; {{ total_views|format_views }} total views</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="channel-content">
+        <h2 class="section-title">Videos</h2>
+
+        {% if videos %}
+        <div class="video-grid">
+            {% for v in videos %}
+            <a href="/watch/{{ v.id }}" class="video-card">
+                <div class="card-thumb">
+                    <img src="/thumbnail/{{ v.thumbnail }}" alt="{{ v.title }}" loading="lazy">
+                    <span class="duration-badge">{{ v.duration|format_duration }}</span>
+                </div>
+                <div class="card-info">
+                    <div class="card-text full">
+                        <h3 class="card-title">{{ v.title }}</h3>
+                        <p class="card-meta">{{ v.views|format_views }} views &middot; {{ v.created_at|time_ago }}</p>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        {% if total_pages > 1 %}
+        <div class="pagination">
+            {% if page > 1 %}
+                <a href="/channel/{{ channel.channel_name }}?page={{ page - 1 }}" class="page-btn">&laquo; Prev</a>
+            {% endif %}
+            <span class="page-info">Page {{ page }} of {{ total_pages }}</span>
+            {% if page < total_pages %}
+                <a href="/channel/{{ channel.channel_name }}?page={{ page + 1 }}" class="page-btn">Next &raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-state">
+            <h3>No videos yet</h3>
+            <p>This channel hasn't uploaded any videos.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

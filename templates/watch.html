@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}{{ video.title }} — hellsy.tube{% endblock %}
+
+{% block content %}
+<div class="watch-layout">
+    <div class="watch-main">
+        <div class="player-wrap">
+            <video
+                id="videoPlayer"
+                class="video-player"
+                src="/video/stream/{{ video.filename }}"
+                type="{{ video.mime_type }}"
+                controls
+                autoplay
+                preload="metadata"
+                playsinline
+            >
+                Your browser does not support HTML5 video.
+            </video>
+        </div>
+
+        <div class="watch-info">
+            <h1 class="watch-title">{{ video.title }}</h1>
+            <div class="watch-stats">
+                <span>{{ video.views|format_views }} views</span>
+                <span>&middot;</span>
+                <span>{{ video.created_at|time_ago }}</span>
+                {% if video.duration > 0 %}
+                <span>&middot;</span>
+                <span>{{ video.duration|format_duration }}</span>
+                {% endif %}
+                {% if video.width and video.height %}
+                <span>&middot;</span>
+                <span>{{ video.width }}x{{ video.height }}</span>
+                {% endif %}
+            </div>
+
+            <div class="watch-actions">
+                <button class="btn-like {% if user_liked %}liked{% endif %}" id="likeBtn" onclick="toggleLike({{ video.id }})">
+                    <span class="like-icon">&#9829;</span>
+                    <span id="likeCount">{{ video.likes_count }}</span>
+                </button>
+                <button class="btn-share" onclick="shareVideo()">Share</button>
+            </div>
+
+            <div class="uploader-bar">
+                <a href="/channel/{{ video.channel_name }}" class="uploader-link">
+                    {% if video.uploader_avatar %}
+                        <img src="{{ video.uploader_avatar }}" alt="" class="uploader-avatar">
+                    {% else %}
+                        <span class="avatar-placeholder lg">{{ video.uploader_name[0]|upper }}</span>
+                    {% endif %}
+                    <div class="uploader-info">
+                        <span class="uploader-name">{{ video.uploader_name }}</span>
+                        <span class="uploader-count">{{ uploader_video_count }} video{{ 's' if uploader_video_count != 1 }}</span>
+                    </div>
+                </a>
+            </div>
+
+            {% if video.description %}
+            <div class="watch-description" id="descBox">
+                <p>{{ video.description }}</p>
+            </div>
+            {% endif %}
+
+            {% if video.tags %}
+            <div class="watch-tags">
+                {% for tag in video.tags.split(',') %}
+                    {% if tag.strip() %}
+                    <a href="/?tag={{ tag.strip() }}" class="tag-chip">{{ tag.strip() }}</a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="comments-section">
+            <h3 class="comments-title">{{ comments|length }} Comment{{ 's' if comments|length != 1 }}</h3>
+
+            {% if user %}
+            <form class="comment-form" action="/api/comment/{{ video.id }}" method="post">
+                <div class="comment-input-row">
+                    {% if user.avatar_url %}
+                        <img src="{{ user.avatar_url }}" alt="" class="comment-avatar">
+                    {% else %}
+                        <span class="avatar-placeholder sm">{{ user.name[0]|upper }}</span>
+                    {% endif %}
+                    <input type="text" name="text" placeholder="Add a comment..." required class="comment-input">
+                    <button type="submit" class="btn btn-comment">Post</button>
+                </div>
+            </form>
+            {% else %}
+            <p class="comment-login"><a href="/login">Sign in</a> to comment</p>
+            {% endif %}
+
+            <div class="comments-list">
+                {% for c in comments %}
+                <div class="comment-item">
+                    {% if c.user_avatar %}
+                        <img src="{{ c.user_avatar }}" alt="" class="comment-avatar">
+                    {% else %}
+                        <span class="avatar-placeholder sm">{{ c.user_name[0]|upper }}</span>
+                    {% endif %}
+                    <div class="comment-body">
+                        <div class="comment-header">
+                            <span class="comment-author">{{ c.user_name }}</span>
+                            <span class="comment-time">{{ c.created_at|time_ago }}</span>
+                        </div>
+                        <p class="comment-text">{{ c.text }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <aside class="watch-sidebar">
+        <h3 class="sidebar-title">Up Next</h3>
+        {% for r in related %}
+        <a href="/watch/{{ r.id }}" class="sidebar-card">
+            <div class="sidebar-thumb">
+                <img src="/thumbnail/{{ r.thumbnail }}" alt="{{ r.title }}" loading="lazy">
+                <span class="duration-badge sm">{{ r.duration|format_duration }}</span>
+            </div>
+            <div class="sidebar-info">
+                <h4 class="sidebar-video-title">{{ r.title }}</h4>
+                <p class="sidebar-channel">{{ r.uploader_name }}</p>
+                <p class="sidebar-meta">{{ r.views|format_views }} views</p>
+            </div>
+        </a>
+        {% endfor %}
+    </aside>
+</div>
+
+{% block scripts %}
+<script>
+function shareVideo() {
+    const url = window.location.href;
+    if (navigator.share) {
+        navigator.share({ title: '{{ video.title }}', url: url });
+    } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+            const btn = document.querySelector('.btn-share');
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Share', 2000);
+        });
+    }
+}
+</script>
+{% endblock %}

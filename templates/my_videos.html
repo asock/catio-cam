@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}My Videos — hellsy.tube{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>My Videos</h1>
+        <a href="/upload" class="btn btn-upload">Upload New</a>
+    </div>
+
+    {% if videos %}
+    <div class="my-videos-list">
+        {% for v in videos %}
+        <div class="my-video-item">
+            <a href="{% if v.status == 'published' %}/watch/{{ v.id }}{% else %}#{% endif %}" class="my-video-thumb">
+                {% if v.thumbnail %}
+                    <img src="/thumbnail/{{ v.thumbnail }}" alt="{{ v.title }}" loading="lazy">
+                {% endif %}
+                <span class="duration-badge">{{ v.duration|format_duration }}</span>
+            </a>
+            <div class="my-video-info">
+                <h3 class="my-video-title">{{ v.title }}</h3>
+                <div class="my-video-meta">
+                    <span class="status-pill status-{{ v.status }}">{{ v.status }}</span>
+                    <span>{{ v.views|format_views }} views</span>
+                    <span>{{ v.likes_count }} likes</span>
+                    <span>{{ v.file_size|format_size }}</span>
+                    <span>{{ v.created_at|time_ago }}</span>
+                </div>
+                {% if v.description %}
+                <p class="my-video-desc">{{ v.description[:120] }}{% if v.description|length > 120 %}...{% endif %}</p>
+                {% endif %}
+            </div>
+            <div class="my-video-actions">
+                <button class="btn btn-danger btn-sm" onclick="deleteVideo({{ v.id }}, this)">Delete</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">&#9654;</div>
+        <h3>No videos yet</h3>
+        <p>Upload your first video and share it with the world!</p>
+        <a href="/upload" class="btn btn-upload">Upload Video</a>
+    </div>
+    {% endif %}
+</div>
+
+{% block scripts %}
+<script>
+async function deleteVideo(id, btn) {
+    if (!confirm('Delete this video permanently?')) return;
+    btn.disabled = true;
+    btn.textContent = 'Deleting...';
+    try {
+        const res = await fetch('/api/delete/' + id, { method: 'POST' });
+        if (res.ok) {
+            btn.closest('.my-video-item').remove();
+        } else {
+            alert('Failed to delete');
+            btn.disabled = false;
+            btn.textContent = 'Delete';
+        }
+    } catch(e) {
+        alert('Error deleting video');
+        btn.disabled = false;
+        btn.textContent = 'Delete';
+    }
+}
+</script>
+{% endblock %}

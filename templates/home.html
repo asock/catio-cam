@@ -1,74 +1,105 @@
 {% extends "base.html" %}
+{% block title %}hellsy.tube — Watch & Share Videos{% endblock %}
 
 {% block content %}
 <div class="container">
-    {% if featured_stream %}
-    <section class="featured-section">
-        <h1>Featured Catio Stream</h1>
-        <div class="featured-stream">
-            <div class="stream-player">
-                {% if featured_stream.platform == "twitch" %}
-                <iframe
-                    src="https://player.twitch.tv/?channel={{ featured_stream.channel_url.split('/')[-1] }}&parent=localhost&parent=127.0.0.1"
-                    height="480"
-                    width="100%"
-                    allowfullscreen>
-                </iframe>
-                {% elif featured_stream.platform == "youtube" %}
-                <iframe
-                    width="100%"
-                    height="480"
-                    src="https://www.youtube.com/embed/{{ featured_stream.channel_url.split('/')[-1] }}"
-                    frameborder="0"
-                    allowfullscreen>
-                </iframe>
-                {% endif %}
+
+    {% if featured %}
+    <section class="featured-hero">
+        <a href="/watch/{{ featured.id }}" class="featured-link">
+            <div class="featured-thumb">
+                <img src="/thumbnail/{{ featured.thumbnail }}" alt="{{ featured.title }}" loading="lazy">
+                <span class="duration-badge">{{ featured.duration|format_duration }}</span>
+                <div class="play-overlay"><span class="play-icon">&#9654;</span></div>
+                <span class="featured-label">FEATURED</span>
             </div>
-            <div class="stream-info">
-                <h2>{{ featured_stream.title }}</h2>
-                <p class="platform-badge">{{ featured_stream.platform }}</p>
-                <p class="stream-owner">By {{ featured_stream.owner_name }}</p>
+            <div class="featured-info">
+                <h2 class="featured-title">{{ featured.title }}</h2>
+                <div class="featured-meta">
+                    <span>{{ featured.uploader_name }}</span>
+                    <span>{{ featured.views|format_views }} views</span>
+                    <span>{{ featured.created_at|time_ago }}</span>
+                </div>
             </div>
-        </div>
+        </a>
     </section>
     {% endif %}
-    
-    {% if community_streams %}
-    <section class="community-section">
-        <h2>Community Catio Streams</h2>
-        <div class="stream-grid">
-            {% for stream in community_streams %}
-            <div class="stream-card">
-                <div class="stream-thumbnail">
-                    {% if stream.platform == "twitch" %}
-                    <iframe
-                        src="https://player.twitch.tv/?channel={{ stream.channel_url.split('/')[-1] }}&parent=localhost&parent=127.0.0.1"
-                        height="200"
-                        width="100%">
-                    </iframe>
-                    {% elif stream.platform == "youtube" %}
-                    <iframe
-                        width="100%"
-                        height="200"
-                        src="https://www.youtube.com/embed/{{ stream.channel_url.split('/')[-1] }}"
-                        frameborder="0">
-                    </iframe>
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    <h3>{{ stream.title }}</h3>
-                    <span class="platform-badge">{{ stream.platform }}</span>
-                    <p class="stream-owner">{{ stream.owner_name }}</p>
-                </div>
+
+    <section class="feed-section">
+        <div class="feed-header">
+            <h2 class="section-title">
+                {% if current_tag %}
+                    Videos tagged "{{ current_tag }}"
+                {% elif sort == 'popular' %}
+                    Most Popular
+                {% elif sort == 'trending' %}
+                    Trending Now
+                {% else %}
+                    Latest Videos
+                {% endif %}
+            </h2>
+            <div class="sort-tabs">
+                <a href="/?sort=recent{% if current_tag %}&tag={{ current_tag }}{% endif %}" class="tab {% if sort == 'recent' %}active{% endif %}">Recent</a>
+                <a href="/?sort=popular{% if current_tag %}&tag={{ current_tag }}{% endif %}" class="tab {% if sort == 'popular' %}active{% endif %}">Popular</a>
+                <a href="/?sort=trending{% if current_tag %}&tag={{ current_tag }}{% endif %}" class="tab {% if sort == 'trending' %}active{% endif %}">Trending</a>
             </div>
+        </div>
+
+        {% if all_tags %}
+        <div class="tag-bar">
+            <a href="/?sort={{ sort }}" class="tag-chip {% if not current_tag %}active{% endif %}">All</a>
+            {% for t in all_tags %}
+                <a href="/?sort={{ sort }}&tag={{ t }}" class="tag-chip {% if current_tag == t %}active{% endif %}">{{ t }}</a>
             {% endfor %}
         </div>
+        {% endif %}
+
+        {% if videos %}
+        <div class="video-grid">
+            {% for v in videos %}
+            <a href="/watch/{{ v.id }}" class="video-card">
+                <div class="card-thumb">
+                    <img src="/thumbnail/{{ v.thumbnail }}" alt="{{ v.title }}" loading="lazy">
+                    <span class="duration-badge">{{ v.duration|format_duration }}</span>
+                </div>
+                <div class="card-info">
+                    <div class="card-avatar">
+                        {% if v.uploader_avatar %}
+                            <img src="{{ v.uploader_avatar }}" alt="">
+                        {% else %}
+                            <span class="avatar-placeholder">{{ v.uploader_name[0]|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-text">
+                        <h3 class="card-title">{{ v.title }}</h3>
+                        <p class="card-channel">{{ v.uploader_name }}</p>
+                        <p class="card-meta">{{ v.views|format_views }} views &middot; {{ v.created_at|time_ago }}</p>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        {% if total_pages > 1 %}
+        <div class="pagination">
+            {% if page > 1 %}
+                <a href="/?sort={{ sort }}&page={{ page - 1 }}{% if current_tag %}&tag={{ current_tag }}{% endif %}" class="page-btn">&laquo; Prev</a>
+            {% endif %}
+            <span class="page-info">Page {{ page }} of {{ total_pages }}</span>
+            {% if page < total_pages %}
+                <a href="/?sort={{ sort }}&page={{ page + 1 }}{% if current_tag %}&tag={{ current_tag }}{% endif %}" class="page-btn">Next &raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">&#9654;</div>
+            <h3>No videos yet</h3>
+            <p>Be the first to upload a video!</p>
+            <a href="/upload" class="btn btn-upload">Upload Video</a>
+        </div>
+        {% endif %}
     </section>
-    {% else %}
-    <section class="empty-state">
-        <p>No community streams yet. Be the first to add yours!</p>
-        <a href="/add" class="btn-primary">Add Your Catio Stream</a>
-    </section>
-    {% endif %}
 </div>
 {% endblock %}

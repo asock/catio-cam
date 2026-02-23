@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{% if query %}{{ query }} — Search{% endif %} hellsy.tube{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% if query %}
+    <div class="search-header">
+        <h2>Search results for "{{ query }}"</h2>
+        <p class="search-count">{{ total }} result{{ 's' if total != 1 }}</p>
+    </div>
+    {% endif %}
+
+    {% if videos %}
+    <div class="search-results">
+        {% for v in videos %}
+        <a href="/watch/{{ v.id }}" class="search-result-card">
+            <div class="search-thumb">
+                <img src="/thumbnail/{{ v.thumbnail }}" alt="{{ v.title }}" loading="lazy">
+                <span class="duration-badge">{{ v.duration|format_duration }}</span>
+            </div>
+            <div class="search-info">
+                <h3 class="search-title">{{ v.title }}</h3>
+                <p class="search-meta">{{ v.views|format_views }} views &middot; {{ v.created_at|time_ago }}</p>
+                <div class="search-channel">
+                    {% if v.uploader_avatar %}
+                        <img src="{{ v.uploader_avatar }}" alt="" class="search-avatar">
+                    {% else %}
+                        <span class="avatar-placeholder sm">{{ v.uploader_name[0]|upper }}</span>
+                    {% endif %}
+                    <span>{{ v.uploader_name }}</span>
+                </div>
+                {% if v.description %}
+                <p class="search-desc">{{ v.description[:200] }}{% if v.description|length > 200 %}...{% endif %}</p>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    {% if total_pages > 1 %}
+    <div class="pagination">
+        {% if page > 1 %}
+            <a href="/search?q={{ query }}&page={{ page - 1 }}" class="page-btn">&laquo; Prev</a>
+        {% endif %}
+        <span class="page-info">Page {{ page }} of {{ total_pages }}</span>
+        {% if page < total_pages %}
+            <a href="/search?q={{ query }}&page={{ page + 1 }}" class="page-btn">Next &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% elif query %}
+    <div class="empty-state">
+        <h3>No results found</h3>
+        <p>Try different keywords or browse the <a href="/">homepage</a></p>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h3>Search for videos</h3>
+        <p>Enter a search term above to find videos</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
