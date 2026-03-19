@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{{ stream.title }} - Catio.cam{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="stream-detail">
+        <div class="stream-player">
+            {% if stream.platform == "twitch" %}
+            <iframe
+                src="https://player.twitch.tv/?channel={{ stream.channel_url.split('/')[-1] }}&parent=localhost&parent=127.0.0.1"
+                height="480"
+                width="100%"
+                allowfullscreen>
+            </iframe>
+            {% elif stream.platform == "youtube" %}
+            <iframe
+                width="100%"
+                height="480"
+                src="https://www.youtube.com/embed/{{ stream.channel_url.split('/')[-1] }}"
+                frameborder="0"
+                allowfullscreen>
+            </iframe>
+            {% endif %}
+        </div>
+
+        <div class="stream-info">
+            <h1>{{ stream.title }}</h1>
+            <p class="stream-meta">
+                <span class="platform-badge">{{ stream.platform }}</span>
+                <span class="stream-owner">By {{ stream.owner_name }}</span>
+                {% if stream.location %}
+                <span class="stream-location">{{ stream.location }}</span>
+                {% endif %}
+            </p>
+            {% if stream.description %}
+            <p class="stream-description">{{ stream.description }}</p>
+            {% endif %}
+            {% if stream.tags %}
+            <div class="stream-tags">
+                {% for tag in stream.tags.split(',') %}
+                <a href="/?tag={{ tag.strip() }}" class="tag-badge">{{ tag.strip() }}</a>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <p class="stream-stats">{{ stream.total_views }} views &bull; {{ stream.viewers }} watching now</p>
+
+            {% if user %}
+            <button onclick="toggleFavorite({{ stream.id }})" class="btn-favorite {% if is_favorited %}favorited{% endif %}">
+                {% if is_favorited %}&#9733; Favorited{% else %}&#9734; Favorite{% endif %}
+            </button>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="comments-section">
+        <h2>Comments</h2>
+
+        {% if user %}
+        <form method="post" action="/stream/{{ stream.id }}/comment" class="comment-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="form-group">
+                <textarea name="comment" placeholder="Leave a comment..." required maxlength="1000"></textarea>
+            </div>
+            <button type="submit" class="btn-primary">Post Comment</button>
+        </form>
+        {% else %}
+        <p class="login-prompt"><a href="/login">Log in</a> to leave a comment.</p>
+        {% endif %}
+
+        {% if comments %}
+        <div class="comments-list">
+            {% for comment in comments %}
+            <div class="comment-item">
+                <div class="comment-header">
+                    {% if comment.user_avatar %}
+                    <img src="{{ comment.user_avatar }}" alt="{{ comment.user_name }}" class="comment-avatar">
+                    {% endif %}
+                    <strong>{{ comment.user_name }}</strong>
+                    <span class="comment-date">{{ comment.created_at }}</span>
+                </div>
+                <p class="comment-body">{{ comment.comment }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="empty-message">No comments yet. Be the first!</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

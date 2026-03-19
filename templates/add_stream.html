@@ -7,14 +7,22 @@
     <div class="form-container">
         <h1>Add Your Catio Stream</h1>
         <p>Share your catio with the community! Your stream will be reviewed before going live.</p>
-        
+
         <form method="post" action="/add">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
             <div class="form-group">
                 <label for="title">Stream Title</label>
-                <input type="text" id="title" name="title" required 
+                <input type="text" id="title" name="title" required maxlength="100"
                        placeholder="My Awesome Catio">
             </div>
-            
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" maxlength="500"
+                          placeholder="Tell us about your catio..."></textarea>
+            </div>
+
             <div class="form-group">
                 <label for="platform">Platform</label>
                 <select id="platform" name="platform" required>
@@ -22,14 +30,27 @@
                     <option value="youtube">YouTube</option>
                 </select>
             </div>
-            
+
             <div class="form-group">
                 <label for="channel_url">Channel URL</label>
                 <input type="url" id="channel_url" name="channel_url" required
                        placeholder="https://www.twitch.tv/your-channel">
                 <small>Full URL to your Twitch channel or YouTube live stream</small>
             </div>
-            
+
+            <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" id="location" name="location" maxlength="100"
+                       placeholder="San Francisco, CA">
+            </div>
+
+            <div class="form-group">
+                <label for="tags">Tags</label>
+                <input type="text" id="tags" name="tags" maxlength="200"
+                       placeholder="outdoor,sunny,playful">
+                <small>Comma-separated tags</small>
+            </div>
+
             <button type="submit" class="btn-primary">Submit for Approval</button>
             <a href="/" class="btn-secondary">Cancel</a>
         </form>

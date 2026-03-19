@@ -1,21 +1,23 @@
 // WebSocket connection for real-time updates
 let ws = null;
+let pingInterval = null;
 
 function connectWebSocket() {
-    ws = new WebSocket(`ws://${window.location.host}/ws`);
-    
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+
     ws.onopen = () => {
         console.log('WebSocket connected');
-        setInterval(() => {
+        pingInterval = setInterval(() => {
             if (ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({type: 'ping'}));
             }
         }, 30000);
     };
-    
+
     ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        
+
         if (data.type === 'pong') {
             updateLiveStats();
         } else if (data.type === 'stream_approved' || data.type === 'featured_changed') {
@@ -24,10 +26,19 @@ function connectWebSocket() {
             }
         }
     };
-    
+
     ws.onclose = () => {
         console.log('WebSocket disconnected, reconnecting...');
+        if (pingInterval) {
+            clearInterval(pingInterval);
+            pingInterval = null;
+        }
         setTimeout(connectWebSocket, 3000);
+    };
+
+    ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        ws.close();
     };
 }
 
@@ -35,12 +46,11 @@ async function updateLiveStats() {
     try {
         const response = await fetch('/api/stats');
         const stats = await response.json();
-        
-        const viewersEl = document.getElementById('live-viewers');
-        const streamsEl = document.getElementById('live-streams');
-        
-        if (viewersEl) viewersEl.textContent = stats.total_viewers;
-        if (streamsEl) streamsEl.textContent = stats.approved_streams;
+
+        const statsEl = document.getElementById('live-stats');
+        if (statsEl) {
+            statsEl.textContent = `${stats.approved_streams} streams \u2022 ${stats.users} users \u2022 ${stats.total_viewers} viewers \u2022 ${stats.active_connections} live`;
+        }
     } catch (error) {
         console.error('Failed to fetch stats:', error);
     }
@@ -52,7 +62,7 @@ async function toggleFavorite(streamId) {
             method: 'POST'
         });
         const result = await response.json();
-        
+
         if (result.status === 'success') {
             location.reload();
         }
