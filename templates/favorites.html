@@ -13,16 +13,22 @@
             <div class="stream-thumbnail">
                 {% if stream.platform == "twitch" %}
                 <iframe
-                    src="https://player.twitch.tv/?channel={{ stream.channel_url.split('/')[-1] }}&parent=localhost&parent=127.0.0.1"
+                    src="https://player.twitch.tv/?channel={{ stream.channel_url.split('/')[-1] }}&parent={{ site_domain }}"
                     height="200"
-                    width="100%">
+                    width="100%"
+                    sandbox="allow-scripts allow-same-origin"
+                    title="{{ stream.title }}"
+                    aria-label="Live stream player">
                 </iframe>
                 {% elif stream.platform == "youtube" %}
                 <iframe
                     width="100%"
                     height="200"
                     src="https://www.youtube.com/embed/{{ stream.channel_url.split('/')[-1] }}"
-                    frameborder="0">
+                    frameborder="0"
+                    sandbox="allow-scripts allow-same-origin"
+                    title="{{ stream.title }}"
+                    aria-label="Live stream player">
                 </iframe>
                 {% endif %}
             </div>
@@ -33,6 +39,16 @@
             </div>
         </div>
         {% endfor %}
+    </div>
+
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="/my-favorites?page={{ page - 1 }}" class="btn-secondary">Previous</a>
+        {% endif %}
+        <span>Page {{ page }}</span>
+        {% if has_next %}
+        <a href="/my-favorites?page={{ page + 1 }}" class="btn-primary">Next</a>
+        {% endif %}
     </div>
     {% else %}
     <div class="empty-state">

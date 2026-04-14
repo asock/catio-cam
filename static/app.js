@@ -1,6 +1,8 @@
 // WebSocket connection for real-time updates
 let ws = null;
 let pingInterval = null;
+let reconnectDelay = 1000;
+const MAX_RECONNECT_DELAY = 30000;
 
 function connectWebSocket() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -8,6 +10,7 @@ function connectWebSocket() {
 
     ws.onopen = () => {
         console.log('WebSocket connected');
+        reconnectDelay = 1000;
         pingInterval = setInterval(() => {
             if (ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({type: 'ping'}));
@@ -16,24 +19,28 @@ function connectWebSocket() {
     };
 
     ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-
-        if (data.type === 'pong') {
-            updateLiveStats();
-        } else if (data.type === 'stream_approved' || data.type === 'featured_changed') {
-            if (window.location.pathname === '/' || window.location.pathname === '/admin') {
-                location.reload();
+        try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'pong') {
+                updateLiveStats();
+            } else if (data.type === 'stream_approved' || data.type === 'featured_changed') {
+                if (window.location.pathname === '/' || window.location.pathname === '/admin') {
+                    location.reload();
+                }
             }
+        } catch (e) {
+            console.error('Failed to parse WebSocket message:', e);
         }
     };
 
     ws.onclose = () => {
-        console.log('WebSocket disconnected, reconnecting...');
+        console.log('WebSocket disconnected, reconnecting in ' + (reconnectDelay / 1000) + 's...');
         if (pingInterval) {
             clearInterval(pingInterval);
             pingInterval = null;
         }
-        setTimeout(connectWebSocket, 3000);
+        setTimeout(connectWebSocket, reconnectDelay);
+        reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
     };
 
     ws.onerror = (error) => {
@@ -56,13 +63,29 @@ async function updateLiveStats() {
     }
 }
 
+function getCsrfToken() {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta) return meta.getAttribute('content');
+    const input = document.querySelector('input[name="csrf_token"]');
+    if (input) return input.value;
+    return '';
+}
+
 async function toggleFavorite(streamId) {
     try {
         const response = await fetch(`/stream/${streamId}/favorite`, {
-            method: 'POST'
+            method: 'POST',
+            headers: {
+                'X-CSRF-Token': getCsrfToken()
+            }
         });
-        const result = await response.json();
 
+        if (response.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+
+        const result = await response.json();
         if (result.status === 'success') {
             location.reload();
         }
@@ -75,4 +98,16 @@ async function toggleFavorite(streamId) {
 document.addEventListener('DOMContentLoaded', () => {
     connectWebSocket();
     updateLiveStats();
+
+    // Form double-submit protection
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function() {
+            const btn = form.querySelector('button[type="submit"]');
+            if (btn && !btn.disabled) {
+                btn.disabled = true;
+                btn.dataset.originalText = btn.textContent;
+                btn.textContent = btn.textContent.trim() + '...';
+            }
+        });
+    });
 });

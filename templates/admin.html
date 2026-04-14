@@ -46,7 +46,7 @@
             {% for stream in approved_streams %}
             <div class="admin-stream-item {% if stream.is_featured %}featured-item{% endif %}">
                 <div class="admin-stream-content">
-                    <h3>{{ stream.title }} {% if stream.is_featured %}<span class="featured-badge">★ FEATURED</span>{% endif %}</h3>
+                    <h3>{{ stream.title }} {% if stream.is_featured %}<span class="featured-badge">FEATURED</span>{% endif %}</h3>
                     <p class="stream-meta">
                         <strong>Owner:</strong> {{ stream.owner_name }}<br>
                         <strong>Platform:</strong> {{ stream.platform }}<br>

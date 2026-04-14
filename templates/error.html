@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}{{ error_title }} - Catio.cam{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="error-page">
+        <h1>{{ status_code }}</h1>
+        <h2>{{ error_title }}</h2>
+        <p>{{ error_message }}</p>
+        <a href="/" class="btn-primary">Back to Home</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}{{ stream.title }} - Catio.cam{% endblock %}
+{% block og_title %}{{ stream.title }} - Catio.cam{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -8,10 +9,13 @@
         <div class="stream-player">
             {% if stream.platform == "twitch" %}
             <iframe
-                src="https://player.twitch.tv/?channel={{ stream.channel_url.split('/')[-1] }}&parent=localhost&parent=127.0.0.1"
+                src="https://player.twitch.tv/?channel={{ stream.channel_url.split('/')[-1] }}&parent={{ site_domain }}"
                 height="480"
                 width="100%"
-                allowfullscreen>
+                allowfullscreen
+                sandbox="allow-scripts allow-same-origin"
+                title="{{ stream.title }}"
+                aria-label="Live stream player">
             </iframe>
             {% elif stream.platform == "youtube" %}
             <iframe
@@ -19,7 +23,10 @@
                 height="480"
                 src="https://www.youtube.com/embed/{{ stream.channel_url.split('/')[-1] }}"
                 frameborder="0"
-                allowfullscreen>
+                allowfullscreen
+                sandbox="allow-scripts allow-same-origin"
+                title="{{ stream.title }}"
+                aria-label="Live stream player">
             </iframe>
             {% endif %}
         </div>
@@ -39,14 +46,14 @@
             {% if stream.tags %}
             <div class="stream-tags">
                 {% for tag in stream.tags.split(',') %}
-                <a href="/?tag={{ tag.strip() }}" class="tag-badge">{{ tag.strip() }}</a>
+                <a href="/?tag={{ tag.strip() | urlencode }}" class="tag-badge">{{ tag.strip() }}</a>
                 {% endfor %}
             </div>
             {% endif %}
-            <p class="stream-stats">{{ stream.total_views }} views &bull; {{ stream.viewers }} watching now</p>
+            <p class="stream-stats">{{ stream.total_views }} views</p>
 
             {% if user %}
-            <button onclick="toggleFavorite({{ stream.id }})" class="btn-favorite {% if is_favorited %}favorited{% endif %}">
+            <button onclick="toggleFavorite({{ stream.id }})" class="btn-favorite {% if is_favorited %}favorited{% endif %}" aria-label="Toggle favorite">
                 {% if is_favorited %}&#9733; Favorited{% else %}&#9734; Favorite{% endif %}
             </button>
             {% endif %}
